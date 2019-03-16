@@ -1,5 +1,6 @@
 import itertools
 import random
+import json
 
 
 def main():
@@ -19,6 +20,7 @@ def main():
 
     # create copy of all possible matches before going through algorithm
     days = []
+    numTries = 0
     while True:
         # for first match, pop random tuple off of list
         availableMatches = allPossibleMatchCombinations.copy()
@@ -41,8 +43,12 @@ def main():
 
         if(len(availableMatches) == 0):
             print(len(days))
+            numTries += 1
+            if (numTries > 100):
+                break
             continue
 
+        numTries = 0
         # grab random match in available matches
         currentDayMatches.append(availableMatches.pop(
             random.randint(0, len(availableMatches) - 1)))
@@ -56,7 +62,18 @@ def main():
         if (len(allPossibleMatchCombinations)) == 0:
             break
 
-    print(days)
+    # write out csv file with the result
+    csvStr = ''
+    for dayList in [stripTupleofTuplesDownToList(tuple(day)) for day in days]:
+        dayList.insert(4, '')
+        dayList.insert(9, '')
+        csvStr += ','.join(dayList) + '\r\n'
+    with open('matches.csv', 'w') as f:
+        f.write(csvStr)
+
+    # write out json file with the result
+    with open('matches.json', 'w') as f:
+        f.write(json.dumps(days))
 
 
 def matchDoesNotContainPlayersInTuple(previousMatchesTuple, currentMatchTuple):
